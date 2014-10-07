@@ -1,0 +1,32 @@
+#!/usr/bin/env python
+# Daniel Oskarsson <daniel.oskarsson@gmail.com>
+
+import json
+from collections import OrderedDict
+from sys import argv
+
+def parse(data):
+	if (type(data) is OrderedDict):
+		for key in data:
+			data[key] = parse(data[key])
+	elif (type(data) is list):
+		items = list()
+		for value in data:
+			item = parse(value)
+			if item not in items:
+				items.append(item)
+		data = items
+	elif (type(data) is unicode):
+		data = "string"
+	elif (type(data) is float):
+		data = "number"
+	elif (type(data) is int):
+		#data = "[0,)" if data >= 0 else "(,0)"
+		data = "integer"
+	elif (type(data) is bool):
+		data = "boolean"
+	else:
+		pass
+	return data
+
+print json.dumps(parse(json.loads(argv[1], object_pairs_hook=OrderedDict)))
