@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+# Daniel Oskarsson <daniel.oskarsson@gmail.com>
+
+import json, os
+from collections import OrderedDict
+from sys import argv
+
+def parse(data):
+	if (type(data) is OrderedDict and "$ref" in data.keys()):
+		return data["$ref"]
+	elif (type(data) is OrderedDict and "format" in data.keys()):
+		return data["format"]
+	elif (type(data) is OrderedDict and "anyOf" in data.keys()):
+		return parse(data["anyOf"])
+	elif (type(data) is list):
+		array = list()
+		for value in data:
+			array.append(parse(value))
+		return array
+	# type(data) can be an array of e.g. type and null
+	elif data["type"] == "object":
+		required = list() if not "required" in data.keys() else data["required"]
+		object = OrderedDict()
+		for key in data["properties"]:
+			value = parse(data["properties"][key])
+			if key not in required:
+				key += ":undefined"
+			object[key] = value
+		return object
+	elif data["type"] == "array":
+		return parse(data["items"]);
+	elif data["type"] == "string":
+		return"string"
+	elif data["type"] == "boolean":
+		return"boolean"
+	elif data["type"] == "number":
+		return"number"
+	elif data["type"] == "integer":
+		return "integer"
+
+data = open(argv[1],'r').read() if os.path.isfile(argv[1]) else argv[1]
+print json.dumps(parse(json.loads(data, object_pairs_hook=OrderedDict)), indent = 4)
+
