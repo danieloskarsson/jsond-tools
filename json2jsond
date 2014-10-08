@@ -30,4 +30,4 @@ def parse(data):
 	return data
 
 data = open(argv[1],'r').read() if os.path.isfile(argv[1]) else argv[1]
-print json.dumps(parse(json.loads(data, object_pairs_hook=OrderedDict)))
+print json.dumps(parse(json.loads(data, object_pairs_hook=OrderedDict)), indent = 4)
