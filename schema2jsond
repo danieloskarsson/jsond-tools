@@ -5,6 +5,13 @@ import json, os
 from collections import OrderedDict
 from sys import argv
 
+def nullable(data):
+	try:
+		if data["oneOf"][0]["type"] == "null":
+			return (True, data["oneOf"][1])
+	except:
+		return (False, data)
+
 def parse(data):
 	if (type(data) is OrderedDict and "$ref" in data.keys()):
 		return data["$ref"]
@@ -22,9 +29,12 @@ def parse(data):
 		required = list() if not "required" in data.keys() else data["required"]
 		object = OrderedDict()
 		for key in data["properties"]:
-			value = parse(data["properties"][key])
+			null = nullable(data["properties"][key])
+			value = parse(null[1])
 			if key not in required:
 				key += ":undefined"
+			if null[0] == True:
+				key += ":null"
 			object[key] = value
 		return object
 	elif data["type"] == "array":
@@ -40,4 +50,3 @@ def parse(data):
 
 data = open(argv[1],'r').read() if os.path.isfile(argv[1]) else argv[1]
 print json.dumps(parse(json.loads(data, object_pairs_hook=OrderedDict)), indent = 4)
-
