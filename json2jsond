@@ -3,7 +3,7 @@
 
 import json, os
 from collections import OrderedDict
-from sys import argv
+from sys import argv, stdin
 
 def parse(data):
 	if (type(data) is OrderedDict):
@@ -29,5 +29,9 @@ def parse(data):
 		pass
 	return data
 
-data = open(argv[1],'r').read() if os.path.isfile(argv[1]) else argv[1]
+if not stdin.isatty():
+	data = stdin.read()
+else:
+	data = open(argv[1],'r').read() if os.path.isfile(argv[1]) else argv[1]
+
 print json.dumps(parse(json.loads(data, object_pairs_hook=OrderedDict)), indent = 4)
