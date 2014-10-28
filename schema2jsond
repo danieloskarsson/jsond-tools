@@ -25,9 +25,13 @@ def parse(data):
 			array.append(parse(value))
 		return array
 	# type(data) can be an array of e.g. type and null
+	elif "type" not in data.keys():
+		pass
 	elif data["type"] == "object":
 		required = list() if not "required" in data.keys() else data["required"]
 		object = OrderedDict()
+		if "properties" not in data.keys():
+			return object
 		for key in data["properties"]:
 			null = nullable(data["properties"][key])
 			value = parse(null[1])
