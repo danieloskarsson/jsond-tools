@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+# Daniel Oskarsson <daniel.oskarsson@gmail.com>
+
+import json, os, random
+from copy import deepcopy
+from collections import OrderedDict
+from sys import argv, stdin
+from rstr import xeger, rstr, printable, normal
+
+def parse(data):
+	if type(data) is OrderedDict:
+		for key in data.keys():
+			if key[-1:] == "?":
+				if random.choice([True, False]):
+					del data[key]
+					continue
+				else:
+					data = OrderedDict((key[:-1] if k == key else k, v) for k, v in data.iteritems())
+					key = key[:-1]
+			data[key] = parse(data[key])
+	elif type(data) is list:
+		items = list()
+		for _ in range(random.randint(0, 7)):
+			for value in data:
+				if random.choice([True, False]):
+					if type(value) is OrderedDict:
+						value = deepcopy(value)
+					items.append(parse(value))
+		return items
+	elif type(data) is unicode:
+		if data == "boolean":
+			return random.choice([True, False])
+		elif data == "string":
+			return normal(0, 20, exclude=('\\','\"',))
+		elif data == "number":
+			return random.random() * 100
+		elif data == "integer":
+			return random.randint(0, 100)
+		else:
+			print data
+			# TODO try to parse set 
+			# TODO try to parse interval
+			print xeger(data)
+			pass
+	elif type(data) is float:
+		pass
+	elif type(data) is int:
+		pass
+	elif type(data) is bool:
+		pass
+	else:
+		pass
+	return data
+
+if not stdin.isatty():
+	data = stdin.read()
+else:
+	data = open(argv[1],'r').read() if os.path.isfile(argv[1]) else argv[1]
+
+print json.dumps(parse(json.loads(data, object_pairs_hook=OrderedDict)))
